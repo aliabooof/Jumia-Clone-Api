@@ -25,8 +25,7 @@ namespace Jumia_Api.Application.MappingProfiles
                 .ForMember(dest => dest.VariantName, opt => opt.MapFrom(src => src.ProductVariant != null ? src.ProductVariant.VariantName : null))
                 .ForMember(dest => dest.VariantImageUrl, opt => opt.MapFrom(src => src.ProductVariant != null ? src.ProductVariant.VariantImageUrl : null))
                 .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.PriceAtAddition))
-                .ForMember(dest => dest.DiscountPercentage, opt => opt.MapFrom(src => src.ProductVariant != null ? src.ProductVariant.DiscountPercentage : src.Product.DiscountPercentage))
-;
+                .ForMember(dest => dest.DiscountPercentage, opt => opt.MapFrom(src => src.ProductVariant != null ? src.ProductVariant.DiscountPercentage : src.Product.DiscountPercentage));
         
         }
     }

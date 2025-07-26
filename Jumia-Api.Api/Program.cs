@@ -19,6 +19,7 @@ using Jumia_Api.Domain.Interfaces.UnitOfWork;
 using Jumia_Api.Infrastructure.Presistence.UnitOfWork;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Jumia_Api.Infrastructure.Hubs;
 
 
 namespace Jumia_Api.Api
@@ -63,6 +64,19 @@ namespace Jumia_Api.Api
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig["Key"]!)),
                 };
 
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var token = context.Request.Cookies["JumiaAuthCookie"];
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            context.Token = token;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+
             });
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                .AddCookie(options =>
@@ -70,7 +84,7 @@ namespace Jumia_Api.Api
                    options.Cookie.HttpOnly = true;
                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                    options.Cookie.SameSite = SameSiteMode.Strict;
-                   options.Cookie.Name = "JumiaAuthCookie";
+                   options.Cookie.Name = "JumiaAuthCookie"; 
                    options.Cookie.MaxAge = TimeSpan.FromMinutes(int.Parse(jwtConfig["DurationInMinutes"]!));
                });
             builder.Services.Configure<JwtSettings>(jwtConfig);
@@ -129,6 +143,10 @@ namespace Jumia_Api.Api
             // Swagger/OpenAPI configuration
             builder.Services.AddEndpointsApiExplorer();
 
+            
+           
+
+
             //builder.Services.AddSwaggerGen(c =>
             //{
             //    c.SwaggerDoc("v1", new OpenApiInfo
@@ -140,9 +158,10 @@ namespace Jumia_Api.Api
  
 
 
+
             var app = builder.Build();
             app.UseCors("AllowAngularDev");
-
+            app.UseStaticFiles();
             //Enable Swagger middleware
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -165,6 +184,8 @@ namespace Jumia_Api.Api
 
 
             app.MapControllers();
+            app.MapHub<ChatHub>("/chathub");
+
 
             app.Run();
         }

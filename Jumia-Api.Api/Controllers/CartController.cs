@@ -19,7 +19,7 @@ namespace Jumia_Api.Api.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetCart()
-        {
+      {
             int customerId = GetCustomerId();
             var cart = await _cartService.GetCartAsync(customerId);
             return Ok(cart);
@@ -37,8 +37,8 @@ namespace Jumia_Api.Api.Controllers
         public async Task<IActionResult> UpdateQuantity(int id, [FromBody] UpdateCartItemDto dto)
         {
             int customerId = GetCustomerId();
-            await _cartService.UpdateItemQuantityAsync(customerId, id, dto.Quantity);
-            return Ok();
+            var result = await _cartService.UpdateItemQuantityAsync(customerId, id, dto.Quantity);
+            return Ok(result);
         }
 
         [HttpDelete("items/{id}")]

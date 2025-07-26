@@ -2,6 +2,7 @@
 using Jumia_Api.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Jumia_Api.Api.Controllers
 {
@@ -29,9 +30,10 @@ namespace Jumia_Api.Api.Controllers
 
 
         // GET: api/Address/user/{userId}
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetAllAddressesByUserId(string userId)
+        [HttpGet("user")]
+        public async Task<IActionResult> GetAllAddressesByUserId()
         {
+            var userId = GetUserId();
             var addresses = await _addressService.GetAllAddressesByUserId(userId);
             return Ok(addresses);
         }
@@ -60,7 +62,8 @@ namespace Jumia_Api.Api.Controllers
             {
                 return BadRequest("Address data is required.");
             }
-            var newAddress = await _addressService.AddNewAddress(addressDto);
+            var userId = GetUserId();
+            var newAddress = await _addressService.AddNewAddress(addressDto,userId);
             return CreatedAtAction(nameof(GetAddressById), new { addressId = newAddress.AddressId }, newAddress);
         }
 
@@ -95,7 +98,10 @@ namespace Jumia_Api.Api.Controllers
             return NoContent();
         }
 
-
-
+        private string GetUserId()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return userId;
+        }
     }
 }

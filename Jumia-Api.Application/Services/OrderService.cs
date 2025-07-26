@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Jumia_Api.Application.Services
 {
-    public class OrderService: IOrderService
+    public class OrderService : IOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -98,6 +98,16 @@ namespace Jumia_Api.Application.Services
 
             await _unitOfWork.SaveChangesAsync();
             return true;
+        }
+        public async Task<IEnumerable<SubOrderDTO>> GetSubOrdersByOrderIdAsync(int orderId)
+        {
+            var subOrders = await _unitOfWork.SubOrderRepo.GetSubOrdersByOrderIdAsync(orderId);
+            return _mapper.Map<IEnumerable<SubOrderDTO>>(subOrders);
+        }
+        public async Task<IEnumerable<SubOrderDTO>> GetSubOrdersBySellerIdAsync(int sellerId)
+        {
+            var subOrders = await _unitOfWork.SubOrderRepo.GetSubOrdersBySellerIdAsync(sellerId);
+            return _mapper.Map<IEnumerable<SubOrderDTO>>(subOrders);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Jumia_Api.Application.Dtos.CartDto
 
             public decimal UnitPrice { get; set; } // price for product or variant
             public decimal DiscountPercentage { get; set; }
-            public decimal FinalPrice => UnitPrice - (UnitPrice * DiscountPercentage / 100);
+            public decimal FinalPrice => UnitPrice;
 
             public int Quantity { get; set; }
             public decimal Subtotal => FinalPrice * Quantity;

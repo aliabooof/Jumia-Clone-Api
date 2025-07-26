@@ -98,12 +98,28 @@ namespace Jumia_Api.Application.Services
 
 
         // Adds a new address
-        public async Task<AddressDto> AddNewAddress(CreateAddressDto address)
+        public async Task<AddressDto> AddNewAddress(CreateAddressDto address,string userId)
         {
-            // Map CreateAddressDto to Address entity
+
+            var existingAddress = await _unitOfWork.AddressRepo.GetAllAddressesByUserIdAsync(userId);
+            if (existingAddress == null)
+            {
+                address.IsDefault = true;
+
+            }else if (address.IsDefault) { 
+               
+                foreach(var add in existingAddress)
+                {
+                    add.IsDefault = false;
+                }
+                
+
+            }
+           
+
             var newAddress = new Address
             {
-                UserId = address.UserId,
+                UserId = userId,
                 StreetAddress = address.StreetAddress,
                 City = address.City,
                 State = address.State,
@@ -114,26 +130,24 @@ namespace Jumia_Api.Application.Services
                 AddressName = address.AddressName
             };
 
-            var addedAddress = await _unitOfWork.AddressRepo.AddNewAddressAsync(newAddress);
-            if (addedAddress == null)
-            {
-                throw new Exception("Failed to add address.");
-            }
+
+           var addedAddress = await _unitOfWork.AddressRepo.AddNewAddressAsync(newAddress);
+            await _unitOfWork.SaveChangesAsync();
 
             // Map Address entity to AddressDto object
             var addressDto = new AddressDto
-            {
-                AddressId = addedAddress.AddressId,
-                UserId = addedAddress.UserId,
-                StreetAddress = addedAddress.StreetAddress,
-                City = addedAddress.City,
-                State = addedAddress.State,
-                PostalCode = addedAddress.PostalCode,
-                Country = addedAddress.Country,
-                PhoneNumber = addedAddress.PhoneNumber,
-                IsDefault = addedAddress.IsDefault,
-                AddressName = addedAddress.AddressName
-            };
+                {
+                    AddressId = addedAddress.AddressId,
+                    UserId = addedAddress.UserId,
+                    StreetAddress = addedAddress.StreetAddress,
+                    City = addedAddress.City,
+                    State = addedAddress.State,
+                    PostalCode = addedAddress.PostalCode,
+                    Country = addedAddress.Country,
+                    PhoneNumber = addedAddress.PhoneNumber,
+                    IsDefault = addedAddress.IsDefault,
+                    AddressName = addedAddress.AddressName
+                };
 
             return addressDto;
         }
@@ -148,6 +162,19 @@ namespace Jumia_Api.Application.Services
             if (existingAddress == null)
             {
                 throw new KeyNotFoundException($"Address with ID {addressId} not found.");
+            }
+            if(addressDto.IsDefault)
+            {
+                // If the address is set as default, unset all other addresses for the user
+                var userAddresses = await _unitOfWork.AddressRepo.GetAllAddressesByUserIdAsync(existingAddress.UserId);
+                foreach (var addr in userAddresses)
+                {
+                    if (addr.AddressId != addressId) // Don't unset the current address
+                    {
+                        addr.IsDefault = false;
+                        await _unitOfWork.AddressRepo.UpdateAddressAsync(addr);
+                    }
+                }
             }
             // Map UpdateAddressDto to Address entity
             existingAddress.StreetAddress = addressDto.StreetAddress;

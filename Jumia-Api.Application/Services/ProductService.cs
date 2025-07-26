@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
+using Jumia_Api.Application.Common.Results;
 using Jumia_Api.Application.Dtos.ProductDtos;
 using Jumia_Api.Application.Dtos.ProductDtos.Get;
 using Jumia_Api.Application.Dtos.ProductDtos.Post;
 using Jumia_Api.Application.Interfaces;
+using Jumia_Api.Domain.Interfaces.Repositories;
 using Jumia_Api.Domain.Interfaces.UnitOfWork;
 using Jumia_Api.Domain.Models;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SendGrid.Helpers.Errors.Model;
@@ -16,14 +19,16 @@ namespace Jumia_Api.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ProductService> _logger;
         private readonly IMapper _mapper;
-        public ProductService(IUnitOfWork unitOfWork, ILogger<ProductService> logger, IMapper mapper)
+        private readonly IFileService _fileService;
+        public ProductService(IUnitOfWork unitOfWork, ILogger<ProductService> logger, IMapper mapper, IFileService fileService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _mapper = mapper;
+            _fileService = fileService;
         }
 
-       
+
         public  async Task DeleteProductAsync(int productId)
         {
             await _unitOfWork.ProductRepo.Delete(productId);
@@ -115,12 +120,16 @@ namespace Jumia_Api.Application.Services
 
 
 
-        public async Task<IEnumerable<ProductsUIDto>> GetProductsByCategoriesAsync(string role,ProductFilterRequestDto productFilterRequestDto)
+        public async Task<PagedResult<ProductsUIDto>> GetProductsByCategoriesAsync(string role,ProductFilterRequestDto productFilterRequestDto
+                                                                                   ,int pageNumber = 1,     
+                                                                                    int pageSize = 20)
+
         {
+
             if (productFilterRequestDto == null || !productFilterRequestDto.CategoryIds.Any())
             {
                 _logger.LogWarning("GetProductsByCategoriesAsync called with null or empty categoryIds. Empty product List is returned");
-                return Enumerable.Empty<ProductsUIDto>();
+                return new PagedResult<ProductsUIDto>(null, 0, pageNumber, pageSize);
             }
             var allCategoryIds = productFilterRequestDto.CategoryIds.Distinct().ToList();
             _logger.LogInformation($"GetProductsByCategoriesAsync called with {allCategoryIds.Count} category IDs");
@@ -139,26 +148,35 @@ namespace Jumia_Api.Application.Services
 
             allCategoryIds = allCategoryIds.Distinct().ToList();
 
-            var products =  await _unitOfWork.ProductRepo.GetProductsByCategoryIdsAsync(allCategoryIds,
+            var pagedProducts =  await _unitOfWork.ProductRepo.GetProductsByCategoryIdsAsync(allCategoryIds,
                                                                                 productFilterRequestDto.AttributeFilters,
                                                                                 productFilterRequestDto.MinPrice,
-                                                                                productFilterRequestDto.MaxPrice);
-            if (products == null || !products.Any())
+                                                                                productFilterRequestDto.MaxPrice,
+                                                                                pageNumber,
+                                                                                pageSize);
+            if (pagedProducts == null || !pagedProducts.Items.Any())
             {
                 _logger.LogWarning("No products found for the given categories.");
-                return Enumerable.Empty<ProductsUIDto>();
+                return new PagedResult<ProductsUIDto>(null, 0,pageNumber,pageSize); 
             }
 
-            _logger.LogInformation($"Found {products.Count} products for the given categories.");
+            _logger.LogInformation($"Found {pagedProducts.TotalCount} products for the given categories.");
+
+            IEnumerable<Product> filteredProducts = pagedProducts.Items;
 
             if (role != "Admin" && role != "Seller")
             {
                 // For non-seller and non-admin roles, filter out unavailable products
                 _logger.LogInformation($"Filtering products for role: {role}. Only available products will be returned.");
-                products = products.Where(p => p.IsAvailable).ToList();
-                return products.Select(p => _mapper.Map<ProductsUIDto>(p)).ToList();
+                filteredProducts = filteredProducts.Where(p => p.IsAvailable);
             }
-            return products.Select(p => _mapper.Map<ProductsUIDto>(p)).ToList();
+            return new PagedResult<ProductsUIDto>
+            {
+                Items = filteredProducts.Select(p => _mapper.Map<ProductsUIDto>(p)).ToList(),
+                TotalCount = pagedProducts.TotalCount,
+                CurrentPage = pageNumber,
+                PageSize = pageSize
+            };
 
         }
 
@@ -183,7 +201,11 @@ namespace Jumia_Api.Application.Services
 
         public async Task<int> CreateProductAsync(AddProductDto request)
         {
-           
+
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+       
             var product = _mapper.Map<Product>(request);
 
             product.StockQuantity = request.Variants.Sum(v => v.StockQuantity);
@@ -191,11 +213,33 @@ namespace Jumia_Api.Application.Services
             product.CreatedAt = DateTime.UtcNow;
             product.UpdatedAt = DateTime.UtcNow;
 
-          
+            if (request.MainImageUrl != null && _fileService.IsValidImage(request.MainImageUrl))
+            {
+                product.MainImageUrl = await _fileService.SaveFileAsync(request.MainImageUrl,"products");
+            }
+            else
+            {
+                throw new Exception("Invalid main image URL");
+            }
+
+            foreach (var image in request.AdditionalImageUrls)
+            {
+                if (!_fileService.IsValidImage(image))
+                    continue;
+
+                var imageUrl = await _fileService.SaveFileAsync(image, "products");
+                product.ProductImages.Add(new ProductImage { ImageUrl = imageUrl });
+            }
+
+
+
+
+
             var categoryAttributes = await _unitOfWork.ProductAttributeRepo
                 .GetAttributesByCategoryIdAsync(request.CategoryId);
-
-            foreach (var attr in request.Attributes)
+            if (request.Variants != null || request.Variants.Any())
+            {
+                foreach (var attr in request.Attributes)
             {
                 var attributeInDb = categoryAttributes
                     .FirstOrDefault(a => a.Name == attr.AttributeName);
@@ -213,10 +257,31 @@ namespace Jumia_Api.Application.Services
                 }
             }
 
-            foreach (var variantDto in request.Variants)
+            }
+
+            if (request.Variants != null || request.Variants.Any())
             {
-                var variant = _mapper.Map<ProductVariant>(variantDto);
-                product.ProductVariants.Add(variant);
+                product.ProductVariants = new List<ProductVariant>(); ;
+
+
+                    foreach (var variantDto in request.Variants)
+                {
+                    var variant = _mapper.Map<ProductVariant>(variantDto);
+                
+                    if(variantDto.VariantImageUrl != null && _fileService.IsValidImage(variantDto.VariantImageUrl))
+                    {
+                        variant.VariantImageUrl = await _fileService.SaveFileAsync(variantDto.VariantImageUrl, "products");
+                    }
+                    else
+                    {
+                        throw new Exception("Invalid variant image URL");
+                    }
+
+
+
+
+                    product.ProductVariants.Add(variant);
+                }
             }
 
             // Save everything
@@ -310,14 +375,220 @@ namespace Jumia_Api.Application.Services
             return new AttributeOptionsResponseDto { NextOptions = nextOptions };
         }
 
-      
-   
 
 
 
 
 
-        
+
+
+
+
+
+
+        public async Task UpdateProductAsync(UpdateProductDto request) // Changed return type to void or bool, as ID is already known
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            // 1. Retrieve the existing product from the database
+            // Use Include() to load related entities (images, attributes, variants, variant attributes)
+            // This is CRUCIAL for tracking changes and updates.
+            var existingProduct = await _unitOfWork.ProductRepo
+                                    .GetWithVariantsAndAttributesAsync(request.ProductId); // Assuming this method exists and loads all related data
+
+            if (existingProduct == null)
+                throw new Exception($"Product with ID {request.ProductId} not found.");
+
+            // 2. Update scalar properties of the existing product
+            existingProduct.Name = request.Name;
+            existingProduct.Description = request.Description;
+            existingProduct.BasePrice = request.BasePrice;
+            existingProduct.CategoryId = request.CategoryId; // Update category if allowed
+            existingProduct.ApprovalStatus = "pending"; // Reset approval status on update
+            existingProduct.UpdatedAt = DateTime.UtcNow;
+
+            // 3. Handle Main Image Update
+            if (request.MainImageUrl != null) // A new file was uploaded
+            {
+                if (!_fileService.IsValidImage(request.MainImageUrl))
+                    throw new Exception("Invalid main image file provided.");
+
+                // Optionally, delete the old main image file if it exists
+                if (!string.IsNullOrEmpty(existingProduct.MainImageUrl))
+                {
+                    _fileService.DeleteFile(existingProduct.MainImageUrl); // Assuming DeleteFile method takes a URL/path
+                }
+                existingProduct.MainImageUrl = await _fileService.SaveFileAsync(request.MainImageUrl, "products");
+            }
+            // else: If request.MainImageUrl is null, it means no new file was uploaded for the main image.
+            // The existingProduct.MainImageUrl will retain its value, effectively preserving the old image.
+
+            // 4. Handle Additional Images
+            // A common strategy for collection updates: clear existing and re-add from DTO.
+            // This assumes your DTO sends ALL current additional images (both old retained and new ones).
+            // If your frontend only sends NEW files, this logic needs adjustment (e.g., compare lists).
+            if (request.AdditionalImageUrls != null)
+            {
+                // Clear existing additional images from the product
+                existingProduct.ProductImages.Clear();
+
+                foreach (var imageFile in request.AdditionalImageUrls)
+                {
+                    if (!_fileService.IsValidImage(imageFile))
+                        continue; // Skip invalid files, or throw an error based on your policy
+
+                    var imageUrl = await _fileService.SaveFileAsync(imageFile, "products");
+                    existingProduct.ProductImages.Add(new ProductImage { ImageUrl = imageUrl, ProductId = existingProduct.ProductId });
+                }
+            }
+            // else: If request.AdditionalImageUrls is null, it means no new files were uploaded.
+            // The existing images are cleared above, so this would effectively delete all additional images.
+            // If you want to preserve existing ones when nothing new is uploaded, you need a different DTO strategy (e.g., list of string URLs for existing, list of IFormFile for new).
+            // For simplicity, this assumes the frontend resubmits all desired additional images (new and retained).
+
+
+            // 5. Handle Product Attributes (Root level attributes)
+            // Similar to additional images, a common approach for 1:Many relationships is to delete existing and re-add.
+            // This assumes your frontend sends ALL required product attributes, even if unchanged.
+            if (request.Attributes != null)
+            {
+                existingProduct.productAttributeValues.Clear(); // Clear existing product attribute values
+
+                // Fetch category attributes to validate against
+                var categoryAttributes = await _unitOfWork.ProductAttributeRepo
+                                                .GetAttributesByCategoryIdAsync(request.CategoryId);
+
+                foreach (var attrDto in request.Attributes)
+                {
+                    var attributeInDb = categoryAttributes.FirstOrDefault(a => a.AttributeId == attrDto.AttributeId); // Match by AttributeId
+
+                    if (attributeInDb == null)
+                        throw new Exception($"Attribute with ID '{attrDto.AttributeId}' not valid for category {request.CategoryId}");
+
+                    foreach (var value in attrDto.Values)
+                    {
+                        existingProduct.productAttributeValues.Add(new ProductAttributeValue
+                        {
+                            ProductId = existingProduct.ProductId,
+                            AttributeId = attributeInDb.AttributeId,
+                            Value = value
+                        });
+                    }
+                }
+            }
+
+
+            // 6. Handle Product Variants
+            // This is the most complex part due to nested collections (variant attributes)
+            // Strategy: Compare existing variants with requested variants
+            var existingVariantIds = existingProduct.ProductVariants.Select(v => v.VariantId).ToList();
+            var requestedVariantIds = request.Variants?.Select(v => v.VariantId).ToList() ?? new List<int>();
+
+            // Variants to remove (exist in DB but not in request)
+            var variantsToRemove = existingProduct.ProductVariants
+                                    .Where(ev => !requestedVariantIds.Contains(ev.VariantId))
+                                    .ToList();
+            foreach (var variant in variantsToRemove)
+            {
+                // Optionally delete variant image file here
+                if (!string.IsNullOrEmpty(variant.VariantImageUrl))
+                {
+                    _fileService.DeleteFile(variant.VariantImageUrl);
+                }
+                _unitOfWork.VariantRepo.Delete(variant.VariantId); // Assuming a generic Delete method
+            }
+
+            // Variants to add or update
+            if (request.Variants != null)
+            {
+                foreach (var variantDto in request.Variants)
+                {
+                    ProductVariant variantToProcess;
+
+                    if (variantDto.VariantId > 0 && existingVariantIds.Contains(variantDto.VariantId))
+                    {
+                        // Existing variant: Find and update
+                        variantToProcess = existingProduct.ProductVariants.First(ev => ev.VariantId == variantDto.VariantId);
+                        _mapper.Map(variantDto, variantToProcess); // Map DTO to existing entity to update scalar properties
+                    }
+                    else
+                    {
+                        // New variant: Create and add
+                        variantToProcess = _mapper.Map<ProductVariant>(variantDto);
+                        variantToProcess.ProductId = existingProduct.ProductId; // Link to parent product
+                        existingProduct.ProductVariants.Add(variantToProcess); // Add to EF Core's tracking
+                    }
+
+                    // Handle Variant Image
+                    if (variantDto.VariantImageUrl != null) // New file uploaded for this variant
+                    {
+                        if (!_fileService.IsValidImage(variantDto.VariantImageUrl))
+                            throw new Exception($"Invalid image file for variant '{variantDto.VariantName}'.");
+
+                        // Delete old variant image if it exists and a new one is provided
+                        if (!string.IsNullOrEmpty(variantToProcess.VariantImageUrl))
+                        {
+                            _fileService.DeleteFile(variantToProcess.VariantImageUrl);
+                        }
+                        variantToProcess.VariantImageUrl = await _fileService.SaveFileAsync(variantDto.VariantImageUrl, "products");
+                    }
+                    // else if variantDto.VariantImageUrl is null and variantToProcess.VariantImageUrl already has a value,
+                    // it implies the existing image should be kept, which is handled by simply not re-assigning.
+                    // If variantDto.VariantImageUrl is an empty string and you want to remove the image, you need specific logic.
+                    // Current logic: if null, keep existing. If it's an IFormFile, replace.
+
+                    // Handle Variant Attributes
+                    var existingVariantAttributeIds = variantToProcess.Attributes.Select(va => va.VariantAttributeId).ToList();
+                    var requestedVariantAttributeIds = variantDto.Attributes?.Select(va => va.AttributeId).ToList() ?? new List<int>();
+
+                    // Remove variant attributes
+                    var variantAttrsToRemove = variantToProcess.Attributes
+                                                .Where(eva => !requestedVariantAttributeIds.Contains(eva.VariantAttributeId))
+                                                .ToList();
+                    foreach (var va in variantAttrsToRemove)
+                    {
+                        _unitOfWork.VariantAttributeRepo.Delete(va.VariantAttributeId); // Assuming this repo is for VariantAttributeValue
+                    }
+
+                    // Add or update variant attributes
+                    if (variantDto.Attributes != null)
+                    {
+                        foreach (var varAttrDto in variantDto.Attributes)
+                        {
+                            VariantAttribute variantAttrToProcess;
+
+                            if (existingVariantAttributeIds.Contains(varAttrDto.AttributeId))
+                            {
+                                // Update existing variant attribute
+                                variantAttrToProcess = variantToProcess.Attributes
+                                                        .First(eva => eva.VariantAttributeId == varAttrDto.AttributeId);
+                                variantAttrToProcess.AttributeValue = varAttrDto.AttributeValue;
+                            }
+                            else
+                            {
+                                // Add new variant attribute
+                                variantAttrToProcess = new VariantAttribute
+                                {
+                                    VariantAttributeId = varAttrDto.AttributeId,
+                                    AttributeValue = varAttrDto.AttributeValue,
+                                    VariantId = variantToProcess.VariantId // Link to parent variant
+                                };
+                                variantToProcess.Attributes.Add(variantAttrToProcess);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 7. Recalculate Stock Quantity (if needed, based on variants)
+            existingProduct.StockQuantity = existingProduct.ProductVariants.Sum(v => v.StockQuantity);
+
+            // 8. Mark product as modified and save changes
+            _unitOfWork.ProductRepo.Update(existingProduct); // Assuming a generic Update method
+            await _unitOfWork.SaveChangesAsync();
+        }
+
 
 
 

@@ -21,7 +21,7 @@ namespace Jumia_Api.Application.Interfaces
 
         Task<bool> UserExistsAsync(string email);
 
-        Task<IdentityResult> CreateUserAsync(string email, string password);
+        Task<IdentityResult> CreateUserAsync(string email, string password, string firstName, string lastName, DateTime birthDate, string gender, string address);
         Task<AppUser> FindByEmailAsync(string email);
         Task<bool> CheckPasswordAsync(AppUser user, string password);
 

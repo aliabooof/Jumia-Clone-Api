@@ -28,7 +28,9 @@ namespace Jumia_Api.Application.MappingProfiles
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => "cancelled"))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
 
-            CreateMap<SubOrder, SubOrderDTO>().ReverseMap();
+            CreateMap<SubOrder, SubOrderDTO>()
+                .ForMember(dest=>dest.ID,opt=>opt.MapFrom(src => src.SubOrderId))
+                .ReverseMap();
 
             CreateMap<OrderItem, OrderItemDTO>().ReverseMap();
 

@@ -54,18 +54,18 @@ namespace Jumia_Api.Application.Services
             return _mapper.Map<UserProfileDto>(user);
         }
 
-        public async Task<IdentityResult> CreateUserAsync(string email, string password)
+        public async Task<IdentityResult> CreateUserAsync(string email, string password, string firstName, string lastName, DateTime birthDate, string gender, string address)
         {
             var user = new AppUser
             {
                 UserName = email,
                 Email = email,
                 // Default values for testing
-                FirstName = "Test",
-                LastName = "User",
-                DateOfBirth = new DateTime(2000, 1, 1),
-                Address = "123 Main Street",
-                Gender = "Female" // or "Male", "Other", etc.
+                FirstName = firstName,
+                LastName = lastName,
+                DateOfBirth = birthDate,
+                Address = address,
+                Gender = gender // or "Male", "Other", etc.
             };
             return await _userManager.CreateAsync(user, password);
 

@@ -311,8 +311,8 @@ namespace Jumia_Api.Application.Services
 
         public async Task<IEnumerable<ProductAttribute>> GetCategoriesAttributes(int parentId)
         {
-            var descendants = await _unitOfWork.CategoryRepo.GetDescendantCategoryIdsAsync(parentId);
-            var attributes = await _unitOfWork.ProductAttributeRepo.GetAttributesForCategoriesAsync(descendants);
+            var descendants = await GetCategoryAndDescendantIdsAsync(parentId);
+            var attributes = await _unitOfWork.ProductAttributeRepo.GetAttributesForCategoriesAsync(descendants.ToList());
             return attributes;
         }
     }

@@ -48,7 +48,7 @@ namespace Jumia_Api.Domain.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [Required]
-        public int StockQuantity { get; set; } = 0;
+        public int StockQuantity { get; set; } 
 
         [Required]
         [MaxLength(255)]
@@ -59,11 +59,11 @@ namespace Jumia_Api.Domain.Models
         // Navigation properties
         public Seller Seller { get; set; }
         public Category Category { get; set; }
-      
-        public ICollection<ProductImage> ProductImages { get; set; }
-        public ICollection<ProductVariant> ProductVariants { get; set; } 
 
-        public ICollection<ProductAttributeValue> productAttributeValues { get; set; } 
+        public ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
+        public ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
+
+        public ICollection<ProductAttributeValue> productAttributeValues { get; set; } = new List<ProductAttributeValue>();
 
 
     }

@@ -166,6 +166,18 @@ namespace Jumia_Api.Application.Services
             return ratingDtos;
         }
 
+        public async Task<bool> HasCustomerPurchasedProductAsync(int customerId, int productId)
+        {
+            var orders = await _unitOfWork.OrderRepo.GetByCustomerIdAsync(customerId);
+
+            bool hasBought = orders
+                .SelectMany(o => o.SubOrders)
+                .SelectMany(sub => sub.OrderItems)
+                .Any(item => item.ProductId == productId);
+
+            return hasBought;
+        }
+
 
         public async Task UpdateRating(RatingUpdateDto dto)
         {

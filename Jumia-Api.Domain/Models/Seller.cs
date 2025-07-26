@@ -32,6 +32,8 @@ namespace Jumia_Api.Domain.Models
 
         public double Rating { get; set; } = 0;
 
+        public string ImageUrl { get; set; }
+
         // Navigation property
         public AppUser User { get; set; }
     }

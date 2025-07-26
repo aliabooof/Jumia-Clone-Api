@@ -1,8 +1,11 @@
 ﻿using Jumia_Api.Application.Interfaces;
 using Jumia_Api.Application.MappingProfiles;
 using Jumia_Api.Application.Services;
+
+
 using Jumia_Api.Domain.Interfaces.Repositories;
 using Jumia_Api.Domain.Interfaces.UnitOfWork;
+using Jumia_Api.Infrastructure.External_Services;
 using Jumia_Api.Infrastructure.Presistence.Context;
 using Jumia_Api.Infrastructure.Presistence.Repositories;
 using Jumia_Api.Infrastructure.Presistence.UnitOfWork;
@@ -21,6 +24,9 @@ namespace Jumia_Api.Api.DependencyInjection.Application
             services.AddScoped<ICouponService, CouponService>();
 
             services.AddScoped<IOrderService, OrderService>();
+
+            //services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IChatService, ChatService>();
             // Scan all assemblies
             services.AddAutoMapper(cfg => { },typeof(ProductsMapping).Assembly);
             services.AddAutoMapper(cfg => { }, typeof(UserMapping).Assembly);
@@ -43,11 +49,17 @@ namespace Jumia_Api.Api.DependencyInjection.Application
 
             services.AddScoped<ICartService, CartService>();
 
+
+            services.AddScoped<IFileService, FileService>();
+
+
             services.AddHttpClient<IPaymentService,PaymentService>();
             services.AddScoped<IRatingService, RatingService>();
             
 
             services.AddScoped<IWishlistService, WishlistService>();
+            services.AddScoped<ISellerService,SellerService>();
+
 
 
 

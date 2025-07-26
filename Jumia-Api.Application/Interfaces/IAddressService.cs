@@ -24,7 +24,7 @@ namespace Jumia_Api.Application.Interfaces
 
 
         // add a new address
-        public Task<AddressDto> AddNewAddress(CreateAddressDto address);
+        public Task<AddressDto> AddNewAddress(CreateAddressDto address, string userId);
 
 
         // update an existing address

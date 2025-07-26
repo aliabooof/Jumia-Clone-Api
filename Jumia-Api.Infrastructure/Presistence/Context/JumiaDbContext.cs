@@ -9,6 +9,8 @@ namespace Jumia_Api.Infrastructure.Presistence.Context
         public JumiaDbContext(DbContextOptions<JumiaDbContext> options) : base(options)
         {
         }
+        public virtual DbSet<Chat> Chats { get; set; }
+        public virtual DbSet<ChatMessage> ChatMessages { get; set; }
 
         public virtual DbSet<Address> Addresses { get; set; }
 
@@ -65,6 +67,43 @@ namespace Jumia_Api.Infrastructure.Presistence.Context
         public virtual DbSet<WishlistItem> WishlistItems { get; set; }
 
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
+            // Chat configuration
+            modelBuilder.Entity<Chat>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UserId).IsRequired().HasMaxLength(450);
+                entity.Property(e => e.UserName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.UserEmail).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.AdminId).HasMaxLength(450);
+                entity.Property(e => e.AdminName).HasMaxLength(100);
+                entity.Property(e => e.Status).HasConversion<string>();
+
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.AdminId);
+                entity.HasIndex(e => e.Status);
+            });
+
+            // ChatMessage configuration
+            modelBuilder.Entity<ChatMessage>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SenderId).IsRequired().HasMaxLength(450);
+                entity.Property(e => e.SenderName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Message).IsRequired().HasMaxLength(2000);
+                entity.Property(e => e.Type).HasConversion<string>();
+
+                entity.HasOne(e => e.Chat)
+                    .WithMany(c => c.Messages)
+                    .HasForeignKey(e => e.ChatId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.ChatId);
+                entity.HasIndex(e => e.SentAt);
+            });
+        }
     }
 }

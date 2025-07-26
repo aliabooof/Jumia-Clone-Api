@@ -23,13 +23,20 @@ namespace Jumia_Api.Application.Services
 
         public async Task<string> GenerateJwtTokenAsync (AppUser user,string role, int userTypeId)
         {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Role,role),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName),
-            };
+            var claims = new List<Claim>();
+            
+                if (!string.IsNullOrEmpty(role))
+                claims.Add(new Claim(ClaimTypes.Role, role));
+
+            if (!string.IsNullOrEmpty(user.Email))
+                claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
+
+            if (!string.IsNullOrEmpty(user.Id))
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
+
+            if (!string.IsNullOrEmpty(user.UserName))
+                claims.Add(new Claim(ClaimTypes.Name, user.UserName));
+        
             if (userTypeId != 0)
             {
                 claims.Add(new Claim("userTypeId",userTypeId.ToString()));

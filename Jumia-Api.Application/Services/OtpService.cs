@@ -18,7 +18,7 @@ namespace Jumia_Api.Application.Services
         }
         public string GenerateOtp(string email)
         {
-            var otp = new Random().Next(100000, 999999).ToString();
+            var otp = new Random().Next(1000, 9999).ToString();
             _cache.Set(email, otp, TimeSpan.FromMinutes(5));
             return otp;
         }

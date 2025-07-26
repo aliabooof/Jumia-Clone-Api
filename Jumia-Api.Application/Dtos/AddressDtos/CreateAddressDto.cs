@@ -8,7 +8,7 @@ namespace Jumia_Api.Application.Dtos.AddressDtos
 {
     public class CreateAddressDto
     {
-        public string UserId { get; set; }
+       
         public string StreetAddress { get; set; }
         public string City { get; set; }
         public string State { get; set; }

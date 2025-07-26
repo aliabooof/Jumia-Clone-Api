@@ -20,5 +20,30 @@ namespace Jumia_Api.Application.Dtos.AuthDtos
 
         [Required]
         public string ConfirmPassword { get; set; }
+
+        [Required]
+        [StringLength(50)]
+
+        public string FirstName { get; set; }
+
+        [Required]
+        [StringLength(50)]
+
+        public string LastName { get; set; }
+
+        [Required]
+        [DataType(DataType.Date)]
+
+        public DateTime BirthDate { get; set; }
+
+        [Required]
+        [RegularExpression("^(male|female|other)$", ErrorMessage = "Gender must be male, female, or other")]
+
+        public string Gender { get; set; }
+
+        [Required]
+        [StringLength(200)]
+
+        public string Address { get; set; }
     }
 }

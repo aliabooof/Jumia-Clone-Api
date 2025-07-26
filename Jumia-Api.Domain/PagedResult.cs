@@ -14,6 +14,10 @@ namespace Jumia_Api.Application.Common.Results
         public int PageSize { get; set; }
         public int CurrentPage { get; set; }
 
+        public PagedResult()
+        {
+
+        }
         public PagedResult(IEnumerable<T> items, int totalCount, int currentPage, int pageSize)
         {
             Items = items;

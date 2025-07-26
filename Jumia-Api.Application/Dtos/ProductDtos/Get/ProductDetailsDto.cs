@@ -10,6 +10,11 @@ namespace Jumia_Api.Application.Dtos.ProductDtos.Get
     {
         public int ProductId { get; set; }
         public string Name { get; set; }
+        
+        public int SellerId { get; set; }
+        public string BusinessName { get; set; }
+        public string BusinessDescription { get; set; }
+        public int CategoryId { get; set; }
         public string Description { get; set; }
         public decimal BasePrice { get; set; }
         public string DiscountPercentage { get; set; }

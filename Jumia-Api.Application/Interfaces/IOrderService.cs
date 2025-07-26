@@ -16,5 +16,7 @@ namespace Jumia_Api.Application.Interfaces
         Task<OrderDTO> UpdateOrderAsync(int id, UpdateOrderDTO orderDto);
         Task<bool> DeleteOrderAsync(int id);
         Task<bool> CancelOrderAsync(int id, string cancellationReason = null);
+        Task<IEnumerable<SubOrderDTO>> GetSubOrdersByOrderIdAsync(int orderId);
+        Task<IEnumerable<SubOrderDTO>> GetSubOrdersBySellerIdAsync(int sellerId);
     }
 }

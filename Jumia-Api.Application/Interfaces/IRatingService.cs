@@ -15,5 +15,6 @@ namespace Jumia_Api.Application.Interfaces
         Task AddRating(RatingCreateDto dto);
         Task UpdateRating(RatingUpdateDto dto);
         Task DeleteRating(int id);
+        Task<bool> HasCustomerPurchasedProductAsync(int customerId, int productId);
     }
 }

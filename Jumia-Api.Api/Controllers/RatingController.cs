@@ -26,6 +26,13 @@ namespace Jumia_Api.Api.Controllers
             return Ok(ratings);
         }
 
+        [HttpGet("hasPurchased")]
+        public async Task<IActionResult> HasPurchased([FromQuery] int customerId, [FromQuery] int productId)
+        {
+            var hasBought = await _ratingService.HasCustomerPurchasedProductAsync(customerId, productId);
+            return Ok(hasBought);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRatingById(int id)
         {

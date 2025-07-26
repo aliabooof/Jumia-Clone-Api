@@ -54,6 +54,7 @@ namespace Jumia_Api.Domain.Models
         public Order Order { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; }
 
+
         public Seller Seller { get; set; }
     }
 }

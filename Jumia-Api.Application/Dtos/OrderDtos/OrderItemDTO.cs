@@ -15,11 +15,6 @@ namespace Jumia_Api.Application.Dtos.OrderDtos
         public int Quantity { get; set; }
         public decimal PriceAtPurchase { get; set; }
         public decimal TotalPrice { get; set; }
-        public string ProductName { get; set; }
-        public string ProductImageUrl { get; set; }
-        public string ProductSlug { get; set; }
-        public string ProductBrand { get; set; }
-        public string ProductCategory { get; set; }
 
     }
 }

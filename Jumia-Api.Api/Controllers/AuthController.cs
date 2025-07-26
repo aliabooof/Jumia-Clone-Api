@@ -67,7 +67,10 @@ namespace Jumia_Api.Api.Controllers
             {
                 result.UserId,
                 result.Email,
-                result.UserName
+                result.UserName,
+                result.UserRole,
+                result.UserTypeId
+                
             };
 
             var userInfoJson = JsonSerializer.Serialize(userInfo);
@@ -100,7 +103,9 @@ namespace Jumia_Api.Api.Controllers
             {
                 result.UserId,
                 result.Email,
-                result.UserName
+                result.UserName,
+                result.UserRole,
+               result.UserTypeId
             };
 
             var userInfoJson = JsonSerializer.Serialize(userInfo);
