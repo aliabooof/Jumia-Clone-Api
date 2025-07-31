@@ -25,8 +25,15 @@ namespace Jumia_Api.Infrastructure.Presistence.Repositories
         public async Task<IEnumerable<Product>> GetAvailableProductsAsync()
             => await _dbSet
                 .Where(p => p.IsAvailable)
-                .AsNoTracking()
-                .ToListAsync();
+                .Include(p => p.Seller)
+                    .Include(p => p.Category)
+                    .Include(p => p.ProductImages)
+                    .Include(p => p.ProductVariants)
+                    .ThenInclude(v => v.Attributes)
+                    .Include(p => p.productAttributeValues)
+                    .ThenInclude(av => av.ProductAttribute)
+                    .ToListAsync();
+                
 
        
 
@@ -39,6 +46,14 @@ namespace Jumia_Api.Infrastructure.Presistence.Repositories
         {
             var query = _dbSet
                 .Where(p => categoryIds.Contains(p.CategoryId)).Include(p=>p.ProductVariants)
+                .Include(p => p.Seller)
+                    .Include(p => p.Category)
+                    .Include(p => p.ProductImages)
+                    .Include(p => p.ProductVariants)
+                    .ThenInclude(v => v.Attributes)
+                    .Include(p => p.productAttributeValues)
+                    .ThenInclude(av => av.ProductAttribute)
+                    
                 .AsQueryable();
 
             if (attributeFilters != null && attributeFilters.Any())

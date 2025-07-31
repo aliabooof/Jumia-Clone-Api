@@ -62,6 +62,7 @@ namespace Jumia_Api.Application.Services
             var role = await _userService.GetUserRoleAsync(user);
             int userTypeId=0;
             bool isVerified = false;
+            string sellerStatus = "pending"; 
             if (role == "Customer")
             {
                  var customer =await _unitOfWork.CustomerRepo.GetCustomerByUserIdAsync(user.Id);
@@ -74,7 +75,8 @@ namespace Jumia_Api.Application.Services
             {
                 var seller = await _unitOfWork.SellerRepo.GetSellerByUserID(user.Id);
                 userTypeId = seller.SellerId;
-                isVerified = seller.IsVerified;
+                isVerified = user.EmailConfirmed;
+                sellerStatus = seller.IsVerified;
 
             }
             var token = await _jwtService.GenerateJwtTokenAsync(user, role, userTypeId);
@@ -88,7 +90,9 @@ namespace Jumia_Api.Application.Services
                 UserName = user.FirstName + " " + user.LastName,
                 UserRole = role,
                 UserTypeId=userTypeId,
-                 isVerified = isVerified
+                 isVerified = isVerified,
+                 SellerStatus = sellerStatus
+
 
 
 

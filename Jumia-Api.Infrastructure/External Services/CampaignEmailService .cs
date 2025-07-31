@@ -13,6 +13,7 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Jumia_Api.Application.Services
 {
@@ -182,8 +183,8 @@ namespace Jumia_Api.Application.Services
         Product Name: {product.Name}
         Product Description: {product.Description}
         Product Price: {product.BasePrice:C}
-        Product URL: {product.Name}
-        Product Image URL: {product.Name}
+        Product URL: http://localhost:4200/Products/{product.ProductId}
+        Product Image URL: http://localhost:5087{product.MainImageUrl}
 
         Ensure the snippet includes:
         - Product Name (h3)
@@ -216,13 +217,13 @@ namespace Jumia_Api.Application.Services
                         productHtmlSnippet.Append(streamPart.Message.Content);
                     }
                 }
-               var productHtmlSnippetResult = productHtmlSnippet.ToString();
-                productHtmlSnippetResult = CleanOllamaResponse(productHtmlSnippetResult);
+                var result = productHtmlSnippet.ToString().Trim();
+                result = CleanOllamaResponse(result);
 
                 // Now, append the *completed* snippet for this product to the main email content
-                if (productHtmlSnippetResult.Length > 0)
+                if (result.Length > 0)
                 {
-                    emailHtmlContent.AppendLine(productHtmlSnippetResult.ToString());
+                    emailHtmlContent.AppendLine(result.ToString());
                 }
                 else
                 {
@@ -246,7 +247,7 @@ namespace Jumia_Api.Application.Services
 
         <p style="text-align: center; margin-top: 30px; font-size: 0.9em; color: #777;">
             Thanks for being a valued customer! <br>
-            <a href="{seller.BusinessName}" style="color: #007bff; text-decoration: none;">Visit {seller.BusinessName}'s Store</a>
+            <a href="http://localhost:4200/products-brand/{seller.SellerId}" style="color: #007bff; text-decoration: none;">Visit {seller.BusinessName}'s Store</a>
         </p>
 
     </div>
@@ -457,40 +458,10 @@ namespace Jumia_Api.Application.Services
             {
                 return string.Empty;
             }
-
             var cleanedText = rawText.Trim();
 
-            // Define common preambles/thinking patterns to remove (case-insensitive)
-            string[] unwantedPrefixes = new string[]
-            {
-        "Okay, let me start by understanding the user's request.",
-        "First, the Executive Summary needs to be clear and professional.",
-        "Wait, the user mentioned \"actionable recommendations\"",
-        "I need to ensure all sections are distinct and formatted properly.",
-        "Let me check if I missed any data points.",
-        "Also, professionalism is key here.",
-        "This is an analysis of the provided sales data for",
-        "Here's the detailed report based on the data you provided:",
-        "Here's a detailed monthly performance report for",
-        "Based on the provided data, here's a monthly performance report for",
-        "Here is the monthly performance report for",
-        "Here is a breakdown of the monthly performance report for",
-        "Below is the requested monthly performance report for",
-        "Let's break down the performance report for",
-        "Based on the data, here is the monthly performance report for"
-            };
+            cleanedText = Regex.Replace(cleanedText, "<think>(.*?)</think>", string.Empty, RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
-            foreach (var prefix in unwantedPrefixes)
-            {
-                // Use StringComparison.OrdinalIgnoreCase for case-insensitive comparison
-                if (cleanedText.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    cleanedText = cleanedText.Substring(prefix.Length).Trim();
-                }
-            }
-
-            // You might also want to remove leading newlines or other whitespace if necessary
-            cleanedText = cleanedText.TrimStart('\n', '\r', ' ', '\t');
 
             // If the report always starts with "### Executive Summary",
             // you could specifically look for that and remove anything before it,
