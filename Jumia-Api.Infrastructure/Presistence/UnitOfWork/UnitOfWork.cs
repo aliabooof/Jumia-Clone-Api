@@ -27,10 +27,10 @@ namespace Jumia_Api.Infrastructure.Presistence.UnitOfWork
         private ISellerRepo? _sellerRepo;   
         private IVariantAttributeRepo? _variantAttributeRepo;
         private IRatingRepo? _ratingRepo;
-
+        private IOrderItemRepo? _orderItemRepo;
 
         private IsuborderRepo? _subOrderRepo;
-
+        private ICampaignJobRequestRepo? _campaignJobRequestRepo;   
 
         private readonly Dictionary<Type, object> _repositories = new();
         private ICouponRepo? _couponRepo;
@@ -81,6 +81,10 @@ namespace Jumia_Api.Infrastructure.Presistence.UnitOfWork
 
         public ISellerRepo SellerRepo => _sellerRepo ?? new SellerRepo(_context);
 
+        public IOrderItemRepo OrderItemRepo => _orderItemRepo ?? new OrderItemRepo(_context);
+
+        public ICampaignJobRequestRepo CampaignJobRequestRepo => _campaignJobRequestRepo ?? new CampaignJobRequestRepo(_context);
+
         public void Dispose()
         {
             _context.Dispose();
@@ -101,8 +105,9 @@ namespace Jumia_Api.Infrastructure.Presistence.UnitOfWork
             return await _context.SaveChangesAsync();
         }
 
-
-
-
+        public async Task<int> SaveChangesAsync(CancellationToken token)
+        {
+            return await _context.SaveChangesAsync(token);
+        }
     }
 }

@@ -26,6 +26,14 @@ namespace Jumia_Api.Api.Controllers
             return Ok(ratings);
         }
 
+        [HttpGet("GetAllRatingsForAdmin")]
+        public async Task<ActionResult<IEnumerable<RatingInfoDto>>> GetAllForAdmin()
+        {
+            var ratings = await _ratingService.GetAllRatingForAdmin();
+            return Ok(ratings);
+        }
+
+
         [HttpGet("hasPurchased")]
         public async Task<IActionResult> HasPurchased([FromQuery] int customerId, [FromQuery] int productId)
         {
@@ -80,6 +88,42 @@ namespace Jumia_Api.Api.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { Message = "An error occurred while updating the rating.", Details = ex.Message });
+            }
+        }
+
+        [HttpPut("Accept/{ratingID}")]
+        public async Task<IActionResult> AcceptRating(int ratingID)
+        {
+            try
+            {
+                var result = await _ratingService.AcceptRating(ratingID);
+                return result ? Ok(new { Message = "Rating accepted successfully." }) : BadRequest(new { Message = "Failed to accept rating." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while accepting the rating.", Details = ex.Message });
+            }
+        }
+
+        [HttpPut("Reject/{ratingID}")]
+        public async Task<IActionResult> RejectRating(int ratingID)
+        {
+            try
+            {
+                var result = await _ratingService.RejectRating(ratingID);
+                return result ? Ok(new { Message = "Rating rejected successfully." }) : BadRequest(new { Message = "Failed to reject rating." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while rejecting the rating.", Details = ex.Message });
             }
         }
 

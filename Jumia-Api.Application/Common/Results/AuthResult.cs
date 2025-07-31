@@ -15,6 +15,7 @@
 
         public int? UserTypeId { get; set; }
 
+        public bool isVerified { get; set; } 
         public string? User { get; set; }
 
     }

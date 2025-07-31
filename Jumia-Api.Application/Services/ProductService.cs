@@ -68,14 +68,14 @@ namespace Jumia_Api.Application.Services
                 return Enumerable.Empty<ProductsUIDto>();
             }
             _logger.LogInformation($"Found {products.Count()} products for seller with ID {sellerId}.");
-            if (role == "Seller" || role == "Admin")
+            if (role.ToLower() == "seller" || role.ToLower() == "admin")
             {
                 return products.Select(p => _mapper.Map<ProductsUIDto>(p)).ToList();
             }
             else
             {
                 // For non-seller and non-admin roles, filter out unavailable products
-                var availableProducts = products.Where(p => p.IsAvailable);
+                var availableProducts = products.Where(p => p.IsAvailable && p.ApprovalStatus.ToLower()=="approved");
                 return availableProducts.Select(p => _mapper.Map<ProductsUIDto>(p)).ToList();
             }
 
@@ -98,7 +98,7 @@ namespace Jumia_Api.Application.Services
                 _logger.LogWarning($"Product with ID {productId} not found.");
                 return null; 
             }
-            if(!product.IsAvailable && role == "Customer" )
+            if(!product.IsAvailable && role.ToLower() == "Customer" && product.ApprovalStatus.ToLower() == "rejected" && product.ApprovalStatus.ToLower() == "pending")
             {
                 _logger.LogWarning($"Product with ID {productId} is not available for non-admin users.");
                 return null; // or throw an exception if preferred

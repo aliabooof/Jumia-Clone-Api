@@ -9,6 +9,11 @@ namespace Jumia_Api.Application.Services
 {
     public class EmailService : IEmailService
     {
+        public Task SendBulkEmailAsync(IEnumerable<string> recipientEmails, string subject, string htmlContent)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task SendEmailAsync(string to, string subject, string body)
         {
             Console.WriteLine("====================================");
@@ -18,6 +23,11 @@ namespace Jumia_Api.Application.Services
             Console.WriteLine($"Body: {body}");
             Console.WriteLine("====================================");
             return Task.CompletedTask;
+        }
+
+        public Task SendEmailWithAttachmentAsync(string recipientEmail, string subject, string body, string attachmentFileName, byte[] attachmentBytes)
+        {
+            throw new NotImplementedException();
         }
     }
 }

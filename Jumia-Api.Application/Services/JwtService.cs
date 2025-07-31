@@ -48,7 +48,7 @@ namespace Jumia_Api.Application.Services
                 issuer: _setting.Issuer,
                 audience: _setting.Audience,
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(_setting.DurationInMinutes),
+                expires: DateTime.Now.AddDays(_setting.DurationInDays),
                 signingCredentials: creds
                 );
 

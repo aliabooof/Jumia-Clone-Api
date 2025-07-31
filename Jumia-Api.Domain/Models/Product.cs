@@ -28,6 +28,8 @@ namespace Jumia_Api.Domain.Models
 
         [Required]
         public string Description { get; set; }
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(10, 2)")]

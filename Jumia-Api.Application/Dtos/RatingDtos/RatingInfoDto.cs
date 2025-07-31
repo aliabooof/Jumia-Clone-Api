@@ -17,6 +17,8 @@ namespace Jumia_Api.Application.Dtos.RatingDtos
         public string Comment { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsVerifiedPurchase { get; set; }
+
+        public string IsAccepted { get; set; }
         public int HelpfulCount { get; set; }
     }
 }

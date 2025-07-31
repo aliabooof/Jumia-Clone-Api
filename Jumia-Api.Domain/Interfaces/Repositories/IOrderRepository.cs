@@ -15,5 +15,6 @@ namespace Jumia_Api.Domain.Interfaces.Repositories
 
         Task<bool> UpdateOrderStatus(int orderid, string stauts);
         Task<bool> CancelOrderAsync(int id, string cancellationReason = null);
+        
     }
 }

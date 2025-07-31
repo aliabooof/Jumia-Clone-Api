@@ -82,7 +82,13 @@ namespace Jumia_Api.Infrastructure.Presistence.Repositories
 
         public async Task<IEnumerable<Product>> GetProductsBySellerId(int sellerId)
             => await _dbSet
-                .Where(p => p.SellerId == sellerId)
+                    .Where(p => p.SellerId == sellerId)
+                    .Include(p => p.Category)
+                    .Include(p => p.ProductImages)
+                    .Include(p => p.ProductVariants)
+                    .ThenInclude(v => v.Attributes)
+                    .Include(p => p.productAttributeValues)
+                    .ThenInclude(av => av.ProductAttribute)
                 .AsNoTracking()
                 .ToListAsync();
 

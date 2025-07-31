@@ -1,4 +1,5 @@
 ﻿using Jumia_Api.Domain.Interfaces.Repositories;
+using Jumia_Api.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace Jumia_Api.Domain.Interfaces.UnitOfWork
 
         IProductAttributeRepo ProductAttributeRepo { get; }
         IProductRepo ProductRepo { get; }
-
+        IOrderItemRepo OrderItemRepo { get; }
         IAddressRepo AddressRepo { get; }
 
         ICartRepo CartRepo { get; }
@@ -38,9 +39,10 @@ namespace Jumia_Api.Domain.Interfaces.UnitOfWork
 
         IWishlistRepo WishlistRepo { get; }
         IWishlistItemRepo WishlistItemRepo { get; }
-
+        ICampaignJobRequestRepo CampaignJobRequestRepo { get; }
 
         Task<int> SaveChangesAsync();
+        Task<int> SaveChangesAsync(CancellationToken token);
 
 
     }

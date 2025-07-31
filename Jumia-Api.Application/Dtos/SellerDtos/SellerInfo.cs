@@ -19,7 +19,7 @@ namespace Jumia_Api.Application.Dtos.SellerDtos
         public string? ImageUrl { get; set; }
         public string? BusinessDescription { get; set; }
         public string? BusinessLogo { get; set; }
-        public bool IsVerified { get; set; }
+        public string IsVerified { get; set; } = "pending";
         public DateTime? VerifiedAt { get; set; }
         public double? Rating { get; set; }
 

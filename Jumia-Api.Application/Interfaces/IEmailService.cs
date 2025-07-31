@@ -12,6 +12,8 @@ namespace Jumia_Api.Application.Interfaces
         {
             //Task SendSmtpAsync(string toEmail, string subject, string htmlBody);
             public Task SendEmailAsync(string to, string subject, string body);
-        }
+            Task SendEmailWithAttachmentAsync(string recipientEmail, string subject, string body, string attachmentFileName, byte[] attachmentBytes);
+            Task SendBulkEmailAsync(IEnumerable<string> recipientEmails, string subject, string htmlContent);
+    }
     
 }

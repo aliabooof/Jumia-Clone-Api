@@ -60,6 +60,17 @@ namespace Jumia_Api.Api.Controllers
 
         }
 
+
+        [HttpPatch("ToggleBlock/{sellerId}")]
+
+        public async Task<IActionResult> ToggleBlock(int sellerId)
+        {
+            var result = await _sellerService.ToggleBlock(sellerId);
+            if (result)
+                return Ok(new { Message = "Seller block status updated successfully." });
+            return NotFound(new { Message = "Seller not found." });
+        }
+
         [HttpGet("GetAllSellers")]
         public async Task<IActionResult> GetAllSellers()
         {
@@ -67,8 +78,8 @@ namespace Jumia_Api.Api.Controllers
             return Ok(sellers);
         }
 
-        [HttpPatch("ToggleVerification/{sellerId}")]
-        public async Task<IActionResult> ToggleVerification(int sellerId)
+        [HttpPatch("Verification/{sellerId}")]
+        public async Task<IActionResult> Verification(int sellerId)
         {
             var result = await _sellerService.IsVerified(sellerId);
 

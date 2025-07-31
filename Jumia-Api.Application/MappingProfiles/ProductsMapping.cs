@@ -56,7 +56,8 @@ namespace Jumia_Api.Application.MappingProfiles
             CreateMap<Product, ProductDetailsDto>()
                 .ForMember(dest=>dest.MainImageUrl,opt=>opt.MapFrom(src=>src.MainImageUrl))
                 .ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src => src.Seller.BusinessName))
-                .ForMember(dest => dest.BusinessDescription, opt => opt.MapFrom(src => src.Seller.BusinessDescription)) 
+                .ForMember(dest => dest.BusinessDescription, opt => opt.MapFrom(src => src.Seller.BusinessDescription))
+                .ForMember(dest => dest.BusinessLogo, opt => opt.MapFrom(src => src.Seller.BusinessLogo))
                 .ForMember(dest=>dest.DiscountPercentage, opt =>
                     opt.MapFrom(src => src.ProductVariants != null && src.ProductVariants.Any()
 ? src.ProductVariants.Average(v => v.DiscountPercentage)
@@ -80,6 +81,8 @@ namespace Jumia_Api.Application.MappingProfiles
             CreateMap<Product, ProductsUIDto>()
                 .ForMember(dest => dest.Variants, opt => opt.MapFrom(src => src.ProductVariants))
                 .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.MainImageUrl))
+                .ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src => src.Seller.BusinessName))
+                .ForMember(dest => dest.BusinessLogo, opt => opt.MapFrom(src => src.Seller.BusinessLogo))
                 .ForMember(dest => dest.DiscountPercentage, opt =>
                     opt.MapFrom(src =>
                      src.ProductVariants != null && src.ProductVariants.Any()

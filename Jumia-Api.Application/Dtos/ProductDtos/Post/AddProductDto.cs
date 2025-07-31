@@ -20,8 +20,8 @@ namespace Jumia_Api.Application.Dtos.ProductDtos.Post
         public int StockQuantity { get; set; }
         public IFormFile MainImageUrl { get; set; }
        
-        public List<IFormFile> AdditionalImageUrls { get; set; } = new();
-        public List<ProductAttributeDto> Attributes { get; set; } = new();
-        public List<AddProductVariantDto> Variants { get; set; } = new();
+        public List<IFormFile>? AdditionalImageUrls { get; set; } = new();
+        public List<ProductAttributeDto>? Attributes { get; set; } = new();
+        public List<AddProductVariantDto>? Variants { get; set; } = new();
     }
 }

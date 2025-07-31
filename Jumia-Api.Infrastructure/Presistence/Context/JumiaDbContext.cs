@@ -66,7 +66,7 @@ namespace Jumia_Api.Infrastructure.Presistence.Context
 
         public virtual DbSet<WishlistItem> WishlistItems { get; set; }
 
-
+        public DbSet<CampaignJobRequest> CampaignJobRequests { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<SubOrder>()
@@ -74,6 +74,11 @@ namespace Jumia_Api.Infrastructure.Presistence.Context
                 .WithMany(o => o.SubOrders)
                 .HasForeignKey(s => s.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Rating>()
+                    .Property(r => r.IsVerified)
+                    .HasDefaultValue("pending");
+
 
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.SubOrder)

@@ -26,7 +26,7 @@ namespace Jumia_Api.Domain.Models
         [MaxLength(255)]
         public string BusinessLogo { get; set; }
 
-        public bool IsVerified { get; set; } = false;
+        public string IsVerified { get; set; } = "pending";
 
         public DateTime? VerifiedAt { get; set; }
 

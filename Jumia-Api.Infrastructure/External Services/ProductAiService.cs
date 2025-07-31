@@ -165,8 +165,10 @@ namespace Jumia_Api.Application.Services
 
             var productIds = searchResult.Select(r => (int)r.Id.Num).ToList();
             var products = await _unitOfWork.ProductRepo.GetbyIdsWithVariantsAndAttributesAsync(productIds);
-
-               var productsDto = _mapper.Map<IEnumerable<ProductsUIDto>>(products);
+            products = products.Where(p => p.IsAvailable&& p.ApprovalStatus.ToLower()=="approved") // Filter only available products
+                .OrderByDescending(p => searchResult.FirstOrDefault(r => r.Id.Num == (ulong)p.ProductId)?.Score ?? 0)
+                .ToList();
+            var productsDto = _mapper.Map<IEnumerable<ProductsUIDto>>(products);
             return productsDto;
 
 
@@ -226,7 +228,7 @@ namespace Jumia_Api.Application.Services
 
             foreach (var product in products)
             {
-                string fullText = $"{product.Name}";
+                string fullText = $"{product.Name} {product.Description}";
                 var embeddingResponse = await embeddingClient.GenerateAsync(fullText);
                 float[] vector = NormalizeVector(embeddingResponse.Vector.ToArray());
 

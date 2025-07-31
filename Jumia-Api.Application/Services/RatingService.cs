@@ -65,10 +65,12 @@ namespace Jumia_Api.Application.Services
         public async Task<IEnumerable<RatingInfoDto>> GetAllRatings()
         {
             var ratings = await _unitOfWork.RatingRepo.GetAllAsync();
+            var verifiedRatings = ratings.Where(r =>
+    string.Equals(r.IsVerified, "verified", StringComparison.OrdinalIgnoreCase));
             var ratingDtos = new List<RatingInfoDto>();
 
 
-            foreach (var rating in ratings)
+            foreach (var rating in verifiedRatings)
             {
                 string customerName = "Unknown";
                 var productname = await _unitOfWork.ProductRepo.GetByIdAsync(rating.ProductId);
@@ -92,11 +94,38 @@ namespace Jumia_Api.Application.Services
                     Comment = rating.Comment,
                     CreatedAt = rating.CreatedAt,
                     IsVerifiedPurchase = rating.IsVerifiedPurchase,
+                    IsAccepted=rating.IsVerified,
                     HelpfulCount = rating.HelpfulCount
                 });
             }
 
             return ratingDtos;
+        }
+
+
+        public async Task<bool> AcceptRating(int ratingid)
+        {
+            var rating = await _unitOfWork.RatingRepo.GetByIdAsync(ratingid);
+            if (rating == null)
+                throw new KeyNotFoundException("Rating not found.");
+
+            rating.IsVerified = "verified";
+            _unitOfWork.RatingRepo.Update(rating);
+            await _unitOfWork.SaveChangesAsync();
+
+            return true;
+
+        }
+
+        public async Task<bool> RejectRating(int ratingid)
+        {
+            var rating = await _unitOfWork.RatingRepo.GetByIdAsync(ratingid);
+            if (rating == null)
+                throw new KeyNotFoundException("Rating not found.");
+            rating.IsVerified = "rejected";
+            _unitOfWork.RatingRepo.Update(rating);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
         }
 
 
@@ -136,9 +165,11 @@ namespace Jumia_Api.Application.Services
         {
             var ratings = await _unitOfWork.RatingRepo.GetAllAsync();
             var filteredRatings = ratings.Where(r => r.ProductId == productId);
+            var verifiedRatings = filteredRatings
+                .Where(r => string.Equals(r.IsVerified, "verified", StringComparison.OrdinalIgnoreCase));
             var ratingDtos = new List<RatingInfoDto>();
 
-            foreach (var rating in filteredRatings)
+            foreach (var rating in verifiedRatings)
             {
                 string customerName = "Unknown";
                 var productname = await _unitOfWork.ProductRepo.GetByIdAsync(rating.ProductId);
@@ -195,6 +226,45 @@ namespace Jumia_Api.Application.Services
 
             _unitOfWork.RatingRepo.Update(rating);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<RatingInfoDto>> GetAllRatingForAdmin()
+        {
+
+            var ratings = await _unitOfWork.RatingRepo.GetAllAsync();
+            var ratingDtos = new List<RatingInfoDto>();
+
+
+            foreach (var rating in ratings)
+            {
+                string customerName = "Unknown";
+                var productname = await _unitOfWork.ProductRepo.GetByIdAsync(rating.ProductId);
+                var customer = await _unitOfWork.CustomerRepo.GetByIdAsync(rating.CustomerId);
+                if (customer != null)
+                {
+                    var user = await _userManager.FindByIdAsync(customer.UserId);
+                    if (user != null)
+                    {
+                        customerName = $"{user.FirstName} {user.LastName}";
+                    }
+                }
+
+                ratingDtos.Add(new RatingInfoDto
+                {
+                    RatingId = rating.RatingId,
+                    CustomerId = rating.CustomerId,
+                    CustomerName = customerName,
+                    ProductName = productname.Name,
+                    Stars = rating.Stars,
+                    Comment = rating.Comment,
+                    CreatedAt = rating.CreatedAt,
+                    IsVerifiedPurchase = rating.IsVerifiedPurchase,
+                    IsAccepted= rating.IsVerified,
+                    HelpfulCount = rating.HelpfulCount
+                });
+            }
+
+            return ratingDtos;
         }
     }
 }

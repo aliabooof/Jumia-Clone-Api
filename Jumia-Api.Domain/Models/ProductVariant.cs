@@ -20,6 +20,8 @@ namespace Jumia_Api.Domain.Models
         [Required]
         [MaxLength(100)]
         public string VariantName { get; set; }
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(10, 2)")]

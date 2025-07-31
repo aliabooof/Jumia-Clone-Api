@@ -31,6 +31,9 @@ namespace Jumia_Api.Domain.Models
 
         public bool IsVerifiedPurchase { get; set; } = false;
 
+        public string IsVerified { get; set; } = "pending";
+
+
         public int HelpfulCount { get; set; } = 0;
 
         // Navigation properties

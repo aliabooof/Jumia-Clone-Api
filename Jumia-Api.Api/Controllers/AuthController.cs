@@ -71,7 +71,8 @@ namespace Jumia_Api.Api.Controllers
                 result.Email,
                 result.UserName,
                 result.UserRole,
-                result.UserTypeId
+                result.UserTypeId,
+                result.isVerified
                 
             };
 
@@ -107,7 +108,8 @@ namespace Jumia_Api.Api.Controllers
                 result.Email,
                 result.UserName,
                 result.UserRole,
-               result.UserTypeId
+               result.UserTypeId,
+               result.isVerified
             };
 
             var userInfoJson = JsonSerializer.Serialize(userInfo);
@@ -140,7 +142,7 @@ namespace Jumia_Api.Api.Controllers
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddMinutes(60)
+                Expires = DateTime.UtcNow.AddDays(7)
             };
             Response.Cookies.Append("JumiaAuthCookie", token, cookieOptions);
         }
