@@ -39,9 +39,9 @@ namespace Jumia_Api.Infrastructure.Presistence.Repositories
             return await _dbSet.FirstOrDefaultAsync(s => s.SellerId == id);
         }
 
-        public void Update(Seller entity)
+        public async void Update(Seller entity)
         {
-            throw new NotImplementedException();
+            _dbSet.Update(entity);
         }
 
         public async Task<Seller> GetSellerByUserID(string userId)

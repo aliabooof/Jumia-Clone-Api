@@ -103,9 +103,9 @@ namespace Jumia_Api.Application.Services
         }
 
 
-        public async Task<bool> AcceptRating(int ratingid)
+        public async Task<bool> AcceptRating(int ratingId)
         {
-            var rating = await _unitOfWork.RatingRepo.GetByIdAsync(ratingid);
+            var rating = await _unitOfWork.RatingRepo.GetByIdAsync(ratingId);
             if (rating == null)
                 throw new KeyNotFoundException("Rating not found.");
 
@@ -113,9 +113,54 @@ namespace Jumia_Api.Application.Services
             _unitOfWork.RatingRepo.Update(rating);
             await _unitOfWork.SaveChangesAsync();
 
-            return true;
+            // ✅ Update Seller's Rating
+            var product = await _unitOfWork.ProductRepo.GetByIdAsync(rating.ProductId);
+            if (product == null)
+                throw new KeyNotFoundException("Product not found.");
 
+            var sellerId = product.SellerId;
+            var seller = await _unitOfWork.SellerRepo.GetByIdAsync(sellerId);
+            if (seller == null)
+                throw new KeyNotFoundException("Seller not found.");
+
+            // Get all verified ratings for this seller's products
+            var allRatings = await _unitOfWork.RatingRepo.GetAllAsync();
+            var sellerProductIds = (await _unitOfWork.ProductRepo.GetAvailableProductsBySellerId(sellerId))
+                .Select(p => p.ProductId)
+                .ToList();
+
+            var verifiedSellerRatings = allRatings
+                .Where(r => sellerProductIds.Contains(r.ProductId) &&
+                            string.Equals(r.IsVerified, "verified", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (verifiedSellerRatings.Any())
+            {
+                double average = Math.Round(verifiedSellerRatings.Average(r => r.Stars), 2);
+
+                seller.Rating = Math.Round(average, 2);
+            }
+            else
+            {
+                seller.Rating = 0; // or keep old rating
+            }
+
+            try
+            {
+                _unitOfWork.SellerRepo.Update(seller);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to update seller rating: {ex.Message}", ex);
+            }
+
+
+            return true;
         }
+
+
+
 
         public async Task<bool> RejectRating(int ratingid)
         {
