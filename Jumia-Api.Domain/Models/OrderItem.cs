@@ -24,9 +24,11 @@ namespace Jumia_Api.Domain.Models
         [Required]
         public int Quantity { get; set; }
 
+        
         [Required]
         [Column(TypeName = "decimal(10, 2)")]
         public decimal PriceAtPurchase { get; set; }
+        public string MainImageUrl { get; set; } 
 
         [Required]
         [Column(TypeName = "decimal(10, 2)")]

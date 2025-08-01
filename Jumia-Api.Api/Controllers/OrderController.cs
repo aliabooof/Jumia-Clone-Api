@@ -3,6 +3,7 @@ using Jumia_Api.Application.Dtos.OrderDtos;
 using Jumia_Api.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jumia_Api.Api.Controllers
@@ -12,10 +13,12 @@ namespace Jumia_Api.Api.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly ICartService _cartService;
 
-        public OrderController(IOrderService orderService)
+        public OrderController(IOrderService orderService, ICartService cartService)
         {
             _orderService = orderService;
+            _cartService = cartService;
         }
 
         [HttpGet("getall")]
@@ -45,16 +48,25 @@ namespace Jumia_Api.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<OrderCreationResult>> CreateOrder(CreateOrderDTO orderDto)
         {
-            var result = await _orderService.CreateOrderAsync(orderDto);
+            try
+            {
+                var result = await _orderService.CreateOrderAsync(orderDto);
 
-            if (result.Success)
-            {
-                return CreatedAtAction(nameof(CreateOrder), new { id = result.Order.OrderId }, result.Order);
+                if (result.Success)
+                {
+                    await _cartService.ClearCartAsync(orderDto.CustomerId); 
+                    return CreatedAtAction(nameof(CreateOrder), new { id = result.Order.OrderId }, result.Order);
+
+                }
+                else
+                {
+
+                    return BadRequest(new { message = result.ErrorMessage, details = result.ErrorDetails });
+                }
             }
-            else
+            catch(Exception ex) 
             {
-               
-                return BadRequest(new { message = result.ErrorMessage, details = result.ErrorDetails });
+                return BadRequest(ex);
             }
         }
 

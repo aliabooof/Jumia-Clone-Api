@@ -14,6 +14,7 @@ using QuestPDF.Infrastructure;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using static System.Net.WebRequestMethods;
 
 namespace Jumia_Api.Application.Services
 {
@@ -174,24 +175,43 @@ namespace Jumia_Api.Application.Services
             foreach (var product in topProductsForSeller)
             {
                 stoppingToken.ThrowIfCancellationRequested(); // Check for cancellation
+                var fullImageUrl = @"http://localhost:5087" + product.MainImageUrl;
                 var prompt = $"""
-        Generate an engaging marketing email snippet in HTML for the following product.
-        The snippet should be a self-contained HTML `<div>` or `<section>`.
-        Focus on highlighting key benefits, encouraging a purchase, and making it visually appealing within an email.
-        Use inline CSS for styling.
+        Your task is to generate **EXACTLY ONE HTML SNIPPET** for an email marketing campaign.
+        This snippet must be a **self-contained HTML <div> or <section> element**.
 
+        **STRICT RULES:**
+        1.  **ONLY generate the HTML code.** Do NOT include any other text, explanations, conversational filler, or Markdown code blocks (e.g., ```html, ```css, ```).
+        2.  Do NOT include any internal thoughts, planning, or commentary.
+        3.  The HTML must be valid and ready to be inserted directly into an email body.
+        4.  Use inline CSS for styling within the HTML tags where possible, as external CSS is not supported by all email clients.
+
+        **Product Details to Use:**
         Product Name: {product.Name}
         Product Description: {product.Description}
         Product Price: {product.BasePrice:C}
         Product URL: http://localhost:4200/Products/{product.ProductId}
-        Product Image URL: http://localhost:5087{product.MainImageUrl}
+        Product Image URL: {fullImageUrl}
 
-        Ensure the snippet includes:
-        - Product Name (h3)
-        - Product Image (img tag with provided URL, responsive style)
-        - Engaging description (p tag)
-        - Price (strong or larger font)
-        - A clear "Shop Now" button (a tag with inline styling) linking to Product URL.
+        **Ensure the HTML snippet includes:**
+        -   Product Name (within an `<h3>` tag).
+        -   Product Image (an `<img>` tag with `src="{fullImageUrl}"` and appropriate responsive styling like `max-width: 100%; height: auto;`).
+        -   An engaging description (within a `<p>` tag).
+        -   Price (formatted strongly or with larger font, e.g., `<p><strong>Price: {product.BasePrice:C}</strong></p>`).
+        -   A clear "Shop Now" button (an `<a>` tag with inline styling for button appearance, linking to `Product URL`).
+
+
+        EXAMPLE START OF DESIRED OUTPUT:
+        <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;">
+            <h3>...</h3>
+            <img src="..." alt="..." style="max-width: 100%; height: auto;">
+            <p>...</p>
+            <p><strong>...</strong></p>
+            <a href="..." style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Shop Now</a>
+        </div>
+        END EXAMPLE.
+
+        Your response should start directly with the opening `<div>` or `<section>` tag of the product snippet.
         """;
 
                 var messages = new List<Message>

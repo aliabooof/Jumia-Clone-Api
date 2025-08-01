@@ -11,6 +11,7 @@ using Jumia_Api.Domain.Interfaces.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Jumia_Api.Application.Dtos.OrderDtos;
 using AutoMapper;
+using Qdrant.Client.Grpc;
 
 namespace Jumia_Api.Services.Implementation
 {
@@ -41,6 +42,8 @@ namespace Jumia_Api.Services.Implementation
 
         public async Task<PaymentResponseDto> InitiatePaymentAsync(CreateOrderDTO orderDto)
         {
+            bool sucsses = false;
+            var orderId =0;
             try
             {
                 var orderResult = await _orderService.CreateOrderAsync(orderDto);
@@ -54,6 +57,9 @@ namespace Jumia_Api.Services.Implementation
                         ErrorDetails = string.Join("; ", orderResult.ErrorDetails.Select(kv => $"{kv.Key}: {kv.Value}")),
                     };
                 }
+                orderId = orderResult.Order.OrderId;
+                sucsses = orderResult.Success;
+                
 
                
                 var paymentRequest = new PaymentRequetsDto
@@ -86,6 +92,12 @@ namespace Jumia_Api.Services.Implementation
             }
             catch (Exception ex)
             {
+                if (sucsses)
+                {
+                    var cancellationSuccess = await _orderService.CancelOrderTransactionAsync(orderId);
+                    await _unitOfWork.OrderRepo.Delete(orderId);
+                    await _unitOfWork.SaveChangesAsync();
+                }
                 return new PaymentResponseDto
                 {
                     Success = false,

@@ -123,6 +123,7 @@ namespace Jumia_Api.Application.Services
             order.CreatedAt = DateTime.UtcNow;
             order.UpdatedAt = DateTime.UtcNow;
             order.PaymentStatus = "pending";
+          
 
             // Set CreatedAt and UpdatedAt for SubOrders and OrderItems
             //foreach (var subOrder in order.SubOrders)

@@ -12,6 +12,7 @@ namespace Jumia_Api.Application.Dtos.OrderDtos
         public int SubOrderId { get; set; }
         public int ProductId { get; set; }
         public int? VariationId { get; set; }
+        public string MainImageUrl { get; set; }
         public int Quantity { get; set; }
         public string ProductName { get; set; } 
         public decimal PriceAtPurchase { get; set; }
