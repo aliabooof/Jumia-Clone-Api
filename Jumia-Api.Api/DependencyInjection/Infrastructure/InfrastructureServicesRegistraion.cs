@@ -50,6 +50,9 @@ namespace Jumia_Api.Api.DependencyInjection.Infrastructure
 
             // Register the Background Worker
             services.AddHostedService<CampaignEmailWorker>();
+            services.AddScoped<IRecommendationService, RecommendationService>();
+
+            services.AddHttpClient("AIClient");
             services.AddHostedService<RedisKeyExpiryService>();
             services.AddScoped<ReportKeyHandler>();
 
