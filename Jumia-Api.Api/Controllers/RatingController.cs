@@ -144,5 +144,18 @@ namespace Jumia_Api.Api.Controllers
                 return StatusCode(500, new { Message = "An error occurred while deleting the rating.", Details = ex.Message });
             }
         }
+
+        [HttpGet("GetPendingReviewByCustomer/{customerId}")]
+
+        public async Task<IActionResult> GetPendingReviewByCustomer(int customerId)
+        {
+            var ratings= await _ratingService.GetByCustomerId(customerId);
+            if (ratings == null)
+            {
+                return NotFound();
+            }
+            return Ok(ratings);
+
+        }
     }
 }

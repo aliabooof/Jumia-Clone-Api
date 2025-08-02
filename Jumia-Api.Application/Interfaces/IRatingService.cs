@@ -11,6 +11,8 @@ namespace Jumia_Api.Application.Interfaces
     {
         Task<IEnumerable<RatingInfoDto>> GetAllRatings();
         Task<IEnumerable<RatingInfoDto>> GetAllRatingForAdmin();
+
+        Task<IEnumerable<RatingInfoDto>> GetByCustomerId(int customerId);
         Task<IEnumerable<RatingInfoDto>> GetRatingsByProductId(int productId);
         Task<RatingInfoDto?> GetRatingById(int id);
         Task AddRating(RatingCreateDto dto);

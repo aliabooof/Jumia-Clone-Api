@@ -311,5 +311,48 @@ namespace Jumia_Api.Application.Services
 
             return ratingDtos;
         }
+
+        public async Task<IEnumerable<RatingInfoDto>> GetByCustomerId(int customerId)
+        {
+            var customer = await _unitOfWork.CustomerRepo.GetByIdAsync(customerId);
+            var ratingDtos = new List<RatingInfoDto>();
+            if (customer != null)
+            {
+               
+                var ratings = await _unitOfWork.RatingRepo.GetAllAsync();
+                var filteredRatings = ratings.Where(r => r.CustomerId == customerId).ToList();
+                var pendingRatings = filteredRatings.Where(r =>
+                string.Equals(r.IsVerified, "pending", StringComparison.OrdinalIgnoreCase));
+
+                foreach (var rating in pendingRatings) {
+                    string customerName = "Unknown";
+                    var productname = await _unitOfWork.ProductRepo.GetByIdAsync(rating.ProductId);
+                    var user = await _userManager.FindByIdAsync(customer.UserId);
+                    if (user != null)
+                    {
+                        customerName = $"{user.FirstName} {user.LastName}";
+                    }
+                    ratingDtos.Add(new RatingInfoDto
+                    {
+                        RatingId = rating.RatingId,
+                        CustomerId = rating.CustomerId,
+                        CustomerName = customerName,
+                        ProductName = productname.Name,
+                        Stars = rating.Stars,
+                        Comment = rating.Comment,
+                        CreatedAt = rating.CreatedAt,
+                        IsVerifiedPurchase = rating.IsVerifiedPurchase,
+                        IsAccepted = rating.IsVerified,
+                        HelpfulCount = rating.HelpfulCount
+                    });
+
+
+                }
+                 
+                
+            }
+
+            return ratingDtos;
+        }
     }
 }
