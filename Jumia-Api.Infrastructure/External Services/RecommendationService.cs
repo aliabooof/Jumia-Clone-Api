@@ -126,15 +126,15 @@ namespace Jumia_Api.Infrastructure.External_Services
             try
             {
                 // Fetch all user interaction data
-                var cartTask = _unitOfWork.CartRepo.GetCustomerCartAsync(userId);
-                var ordersTask = _unitOfWork.OrderRepo.GetByCustomerIdAsync(userId);
-                var wishlistTask = _unitOfWork.WishlistRepo.GetCustomerWishlistAsync(userId);
+                var cartTask = await _unitOfWork.CartRepo.GetCustomerCartAsync(userId);
+                var ordersTask = await _unitOfWork.OrderRepo.GetByCustomerIdAsync(userId);
+                var wishlistTask = await _unitOfWork.WishlistRepo.GetCustomerWishlistAsync(userId);
 
-                await Task.WhenAll(cartTask, ordersTask, wishlistTask);
+                //await Task.WhenAll(cartTask, ordersTask, wishlistTask);
 
-                var cart = await cartTask;
-                var orders = await ordersTask;
-                var wishlist = await wishlistTask;
+                var cart = cartTask;
+                var orders =  ordersTask;
+                var wishlist = wishlistTask;
 
                 var allInteractions = new List<(Product Product, int Weight, DateTime Date)>();
 
@@ -308,19 +308,16 @@ namespace Jumia_Api.Infrastructure.External_Services
 
         private async Task<HashSet<int>> GetUserInteractedProductIdsAsync(int userId)
         {
-            var cartTask = _unitOfWork.CartRepo.GetCustomerCartAsync(userId);
-            var ordersTask = _unitOfWork.OrderRepo.GetByCustomerIdAsync(userId);
-            var wishlistTask = _unitOfWork.WishlistRepo.GetCustomerWishlistAsync(userId);
+            var cart = await _unitOfWork.CartRepo.GetCustomerCartAsync(userId);
+            var orders = await _unitOfWork.OrderRepo.GetByCustomerIdAsync(userId);
+            var wishlist = await _unitOfWork.WishlistRepo.GetCustomerWishlistAsync(userId);
 
-            await Task.WhenAll(cartTask, ordersTask, wishlistTask);
 
             var productIds = new HashSet<int>();
 
-            var cart = await cartTask;
             if (cart?.CartItems?.Any() == true)
                 productIds.UnionWith(cart.CartItems.Select(i => i.ProductId));
 
-            var orders = await ordersTask;
             if (orders?.Any() == true)
             {
                 var orderProductIds = orders
@@ -330,7 +327,6 @@ namespace Jumia_Api.Infrastructure.External_Services
                 productIds.UnionWith(orderProductIds);
             }
 
-            var wishlist = await wishlistTask;
             if (wishlist?.WishlistItems?.Any() == true)
                 productIds.UnionWith(wishlist.WishlistItems.Select(i => i.ProductId));
 
