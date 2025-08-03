@@ -42,8 +42,10 @@ namespace Jumia_Api.Api.Controllers
         }
 
         [HttpPost("CreateCoupon")]
+        [Produces("application/json")]
+
         //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateCoupon([FromBody] CreateCouponDto dto)
+        public async Task<IActionResult> CreateCoupon( CreateCouponDto dto)
         {
             var result = await _couponService.CreateCouponAsync(dto);
             if (!result)
