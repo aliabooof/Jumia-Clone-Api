@@ -23,8 +23,9 @@ namespace Jumia_Api.Domain.Interfaces.Repositories
         public Task Activate(int productId);
 
         public Task<Product> GetProductByIdAsync(int id);
+        public Task UpdateProductStatus(int productId, string status);
 
         //public Task DeleteProductAsync(Product product);
-       
+
     }
 }

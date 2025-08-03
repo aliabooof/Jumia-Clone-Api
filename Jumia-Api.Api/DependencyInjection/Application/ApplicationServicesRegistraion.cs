@@ -23,6 +23,7 @@ namespace Jumia_Api.Api.DependencyInjection.Application
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ICouponService, CouponService>();
+            services.AddScoped<IUserCouponService, UserCouponService>();
 
             services.AddScoped<IOrderService, OrderService>();
 

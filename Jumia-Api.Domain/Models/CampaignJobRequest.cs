@@ -12,7 +12,7 @@ namespace Jumia_Api.Domain.Models
     public class CampaignJobRequest
     {
         [Key]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         [Required]
         public JobType JobType { get; set; }

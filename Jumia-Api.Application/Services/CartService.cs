@@ -136,7 +136,7 @@ namespace Jumia_Api.Application.Services
                         Quantity = dto.Quantity,
                         PriceAtAddition = variant != null
                                     ? (variant.Price - (variant.Price * (variant.DiscountPercentage ?? 0) / 100))
-                                    : product.BasePrice
+                                    : product.BasePrice - ((product.BasePrice * (product.DiscountPercentage) / 100)),
                     };
 
                     cart.CartItems.Add(newItem);

@@ -328,7 +328,11 @@ namespace Jumia_Api.Application.Services
         }
 
 
-
+        public async Task UpdateProductStatus(int productId,string status)
+        {
+            await _unitOfWork.ProductRepo.UpdateProductStatus(productId, status);
+            await _unitOfWork.SaveChangesAsync();
+        }
 
 
 

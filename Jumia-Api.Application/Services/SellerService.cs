@@ -266,7 +266,8 @@ namespace Jumia_Api.Application.Services
                 Email = user.Email,
                 UserName = $"{user.FirstName} {user.LastName}",
                 UserRole = "Seller",
-                UserTypeId = seller.SellerId
+                UserTypeId = seller.SellerId,
+                SellerStatus = seller.IsVerified,
             };
         }
 

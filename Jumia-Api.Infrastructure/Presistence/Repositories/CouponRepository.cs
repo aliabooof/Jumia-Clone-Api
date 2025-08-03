@@ -24,7 +24,7 @@ namespace Jumia_Api.Infrastructure.Presistence.Repositories
         public async Task<IEnumerable<Coupon>> GetAllActiveAsync()
         {
             var now = DateTime.UtcNow;
-            return await _dbSet.Where(c => c.IsActive && c.StartDate <= now && c.EndDate >= now)
+            return await _dbSet.Where(c => c.IsActive==true && c.StartDate <= now && c.EndDate >= now)
                 .ToListAsync();
         }
 

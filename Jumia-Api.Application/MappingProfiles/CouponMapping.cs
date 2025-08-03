@@ -14,7 +14,8 @@ namespace Jumia_Api.Application.MappingProfiles
     {
         public CouponMapping() 
         {
-            CreateMap<CreateCategoryDto, Coupon>();
+
+            CreateMap<CreateCouponDto, Coupon>().ReverseMap();
 
             CreateMap<Coupon, CouponDto>();
 

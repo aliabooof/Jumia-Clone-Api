@@ -191,6 +191,19 @@ namespace Jumia_Api.Infrastructure.Presistence.Repositories
 
         }
 
+        public async Task UpdateProductStatus(int productId,string status)
+        {
+
+            var product = await _dbSet.FindAsync(productId);
+            if (product != null)
+            {
+                product.ApprovalStatus = status;
+                product.UpdatedAt = DateTime.UtcNow;
+             
+                
+            }
+        }
+
         
     }
 }

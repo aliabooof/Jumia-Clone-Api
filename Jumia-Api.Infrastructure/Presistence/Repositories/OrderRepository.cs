@@ -61,6 +61,11 @@ namespace Jumia_Api.Infrastructure.Presistence.Repositories
                 return false;
 
             order.Status = "cancelled";
+            if(order.PaymentStatus=="paid" && order.Status == "cancelled")
+            {
+                order.PaymentStatus = "refunded";
+
+            }
             order.UpdatedAt = DateTime.UtcNow;
             _dbSet.Update(order);
             return true;
@@ -68,16 +73,26 @@ namespace Jumia_Api.Infrastructure.Presistence.Repositories
 
         public async Task<bool> UpdateOrderStatus(int orderid, string stauts)
         {
-            var order = await _dbSet.FirstOrDefaultAsync(o => o.OrderId == orderid);
+            var order = await _dbSet.Include(o=>o.SubOrders).FirstOrDefaultAsync(o => o.OrderId == orderid);
             if (order ==null)
             {
                 return false;
             }
             order.Status = stauts.ToLower();
+            foreach (var sub in order.SubOrders)
+            {
+                sub.Status = order.Status;
+                sub.StatusUpdatedAt = DateTime.UtcNow;
+            }
             var DeliverdStatus = "Delivered";
             if (stauts == DeliverdStatus.ToLower())
             {
                 order.PaymentStatus = "paid";
+                foreach(var sub in order.SubOrders)
+                {
+                    sub.Status = "delivered";
+                    sub.StatusUpdatedAt = DateTime.UtcNow;
+                }
             }
             else if (stauts == "Cancelled")
             {

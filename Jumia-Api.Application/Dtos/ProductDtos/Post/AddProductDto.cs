@@ -18,7 +18,7 @@ namespace Jumia_Api.Application.Dtos.ProductDtos.Post
         public decimal BasePrice { get; set; }
         public float DiscountPercentage { set; get; } = 0;
         public int StockQuantity { get; set; }
-        public IFormFile MainImageUrl { get; set; }
+        public IFormFile? MainImageUrl { get; set; }
        
         public List<IFormFile>? AdditionalImageUrls { get; set; } = new();
         public List<ProductAttributeDto>? Attributes { get; set; } = new();

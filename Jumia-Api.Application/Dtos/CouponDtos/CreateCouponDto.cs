@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,8 +20,10 @@ namespace Jumia_Api.Application.Dtos.CouponDtos
         public string Description { get; set; }
 
         [Required]
+        [Column(TypeName = "decimal(10, 2)")]
         public decimal DiscountAmount { get; set; }
 
+        [Column(TypeName = "decimal(10, 2)")]
         public decimal MinimumPurchase { get; set; } = 0;
 
         [Required]

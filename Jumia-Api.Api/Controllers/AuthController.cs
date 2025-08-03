@@ -72,8 +72,10 @@ namespace Jumia_Api.Api.Controllers
                 result.UserName,
                 result.UserRole,
                 result.UserTypeId,
-                result.isVerified
-                
+                result.isVerified,
+                result.SellerStatus
+
+
             };
 
             var userInfoJson = JsonSerializer.Serialize(userInfo);

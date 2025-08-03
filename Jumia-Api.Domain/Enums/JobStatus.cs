@@ -11,6 +11,7 @@ namespace Jumia_Api.Domain.Enums
         Pending,
         Processing,
         Completed,
-        Failed
+        Failed,
+        Cancelled,
     }
 }

@@ -163,6 +163,19 @@ namespace Jumia_Api.Api.Controllers
             return Ok();
         }
 
+        [HttpPut("update-status")]
+        public async Task<IActionResult> UpdateProductStatus([FromQuery] int productId, [FromQuery] string status)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+
+            await _productService.UpdateProductStatus(productId,status.ToLower());
+            return Ok();
+        }
+
 
 
 

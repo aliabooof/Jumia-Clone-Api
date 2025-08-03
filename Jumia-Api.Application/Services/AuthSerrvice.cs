@@ -179,7 +179,8 @@ namespace Jumia_Api.Application.Services
                 Email = user.Email,
                 UserName = user.FirstName + " " + user.LastName,
                 UserRole = "Customer",
-                UserTypeId = customer.CustomerId
+                UserTypeId = customer.CustomerId,
+
 
             };
 

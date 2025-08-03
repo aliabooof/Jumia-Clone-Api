@@ -19,6 +19,7 @@ namespace Jumia_Api.Api.DependencyInjection.Domain
 
             services.AddScoped<ICouponRepo, CouponRepository>();
             services.AddScoped<IUserCouponRepo, UserCouponRepository>();
+            services.AddScoped<IUserCouponRepo, UserCouponRepository>();
             services.AddScoped<ICustomerRepo, CustomerRepo>();
 
             services.AddScoped<ICartItemRepo, CartItemRepo>();
